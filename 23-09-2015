@@ -1,0 +1,92 @@
+  var signup = function (val, hostUrl) {
+        if (!(val || val.length > 0))
+        {
+            val = "DR";
+        }
+
+        var hosturl = hostUrl;        
+
+        var localHostString = hosturl.indexOf("localhost") > -1 ? "" : "/engine";
+
+        var pc = jQuery('#postcode').val();
+
+        var em = jQuery('#email').val();
+
+        if (pc !== "" && em !== "" && isValidEmailAddress(em)) {
+
+            displayMessage('validatepostcode', "");
+            displayMessage('validateemail', "");
+
+            var url = "//" + hosturl + localHostString +"/Supplier/CheckPostCode/" + pc;            
+
+            jQuery.post(url, function (allData)
+            {
+                if (allData.status)
+                {
+
+                    var process = val === "BD" ? "GetBigDealProcess" : "GetBigBritishSwitchProcess";
+
+                    var location = "//" + hosturl + localHostString + "/" + process + "/" + pc + "/" + em + "/" + val;
+
+                    jQuery.get(location, function (allData)
+                    {
+
+                        if (allData !== "" && typeof allData !== "undefined")
+                        {
+
+                            if (allData.message.indexOf('Error') > -1) {
+                                displayMessage('summary', allData.message);
+                            }
+                            else {
+                                
+                                setCookie('pc', pc, 1);
+                                setCookie('em', em, 1);
+                                setCookie('rc', val, 1);
+                                setCookie('id', allData.key, 1);
+
+                                window.location.href = "/thank-you";
+                            }
+                            
+                            
+                        }
+                        else
+                        {
+
+                        }
+
+
+                    });
+
+                   // window.location.href = location;
+
+                }
+                else
+                {
+                    displayMessage('summary', "We could not match your postcode with our database.");                   
+                }
+            });
+        }
+        else
+        {
+            if (jQuery('#summary')) { jQuery('#summary').html("Please correct the errors.") }
+
+            
+
+            if (pc === "")
+            {
+                displayMessage('validatepostcode', "Postcode is required.");
+                
+            }
+          
+            if (em === "" || !isValidEmailAddress(em))
+            {
+                displayMessage('validateemail', "A valid Email is required.");
+                
+            }
+
+            
+        }
+
+
+
+       
